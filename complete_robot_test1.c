@@ -200,9 +200,9 @@ task main()
 
 		//Intake
 		if (vexRT[Btn8L] == 1){
-			motor[IntakeLeft] = motor [IntakeRight] = 80;//Intake open mapped to 7L
+			motor[IntakeLeft] = motor [IntakeRight] = 80;//Intake open mapped to 8L
 			}else if (vexRT[Btn8R] == 1){
-			motor[IntakeLeft] = motor[IntakeRight] = -127;//Intake close mapped to 7R
+			motor[IntakeLeft] = motor[IntakeRight] = -127;//Intake close mapped to 8R
 			}else if (holding_claw == false){
 			motor[IntakeLeft] = motor[IntakeRight] = 0;
 		}
