@@ -3,8 +3,8 @@
 #pragma config(Motor,  port2,           LiftLeftNormal, tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port3,           LiftLeftYCable, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           BLDM,          tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port5,           IntakeLeft,    tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port6,           IntakeRight,   tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port5,           IntakeLeft,    tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port6,           IntakeRight,   tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port7,           BRDM,          tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port8,           LiftRightNormal, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port9,           LiftRightYCable, tmotorVex393_MC29, openLoop, reversed)
@@ -16,11 +16,12 @@
 #define C1RX vexRT[Ch1]
 
 //desired rate is units of 2000 pot ticks per second, so in code the value used is 200;
-int desired_descent_rate = 1;
-int holding_power = -127;
+//int desired_descent_rate = 1;
+int holding_power = -90;
 int liftSpeed = 127;
 bool holding_claw = false;
 bool controlled_fall = true;
+bool holding_lift = false;
 int pv;
 float last_pot_val;
 float current_pot_val;
@@ -103,7 +104,13 @@ task velocity_controlled_liftdown(){
 		//else{
 		//p = 0;
 		//}
-		if(vexRT(Btn8D) == 1){
+		if (vexRT(Btn7U) == 1){
+			holding_lift = true;
+			}else if (vexRT(Btn7D) == 1){
+			holding_lift = false;
+		}
+
+		if(vexRT(Btn8D) == 1 && holding_lift == true){
 			writeDebugStream("df: %d",current_pot_val-last_pot_val);
 			if(SensorValue(lift) < extreme_pot_val){
 				power_lift(-127);
@@ -133,6 +140,14 @@ task main()
 		motor[BLDM] = -C1LY + C1LX - C1RX;
 		wait1Msec(20);
 
+		//Sets controlled lift to on when 7U is triggered, controlled lift turned off when 7D is triggered
+		if (vexRT(Btn7U) == 1){
+			holding_lift = true;
+			//controlled_fall = true;
+			}else if (vexRT(Btn7D) == 1){
+			holding_lift = false;
+			//controlled_fall = false;
+		}
 		//Lift
 		if (vexRT[Btn8U] == 1){
 			power_lift(liftSpeed);
@@ -158,23 +173,34 @@ task main()
 
 
 			//velocity-pid-method
-			jank_fall();
-
-
-			}else{
+			if(holding_lift == true){
+				jank_fall();
+				} else {
+				power_lift(-127);
+			}
 			if(controlled_fall == false){
-				motor[LiftLeftYCable] = motor[LiftLeftNormal] = 0;
-				motor[LiftRightYCable] = motor[LiftRightNormal] = 0;
+				power_lift(0);
 			}
 			else {
 				jank_fall();
 			}
 		}
+		/* \/ this instead of /\*/
+
+		/*
+		if(holding_lift == true){
+			jank_fall();
+		}ele if (holding_lift == false){
+			power_lift(-127);
+		else {
+			power_lift(0);
+		}
+		*/
 
 
 		//Intake
 		if (vexRT[Btn8L] == 1){
-			motor[IntakeLeft] = motor [IntakeRight] = 127;//Intake open mapped to 7L
+			motor[IntakeLeft] = motor [IntakeRight] = 80;//Intake open mapped to 7L
 			}else if (vexRT[Btn8R] == 1){
 			motor[IntakeLeft] = motor[IntakeRight] = -127;//Intake close mapped to 7R
 			}else if (holding_claw == false){
